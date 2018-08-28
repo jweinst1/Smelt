@@ -5,6 +5,7 @@ project(Smelt)
 ######Smelt core source files#######
 SET(core_files
     src/Smelt.c
+    src/util/append_str.c
 )
 
 ####### Smelt Libraries ########
