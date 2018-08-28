@@ -32,6 +32,13 @@ typedef struct
 AppendStr* AppendStr_new(void);
 // Creates a new custom start size append str
 AppendStr* AppendStr_new_sz(size_t start_size);
+// Reserves additional capacity of some amount n
+void AppendStr_reserve(AppendStr* as, size_t n);
+
+/* Main character writing function
+ * If full, expands by APPEND_STR_FACTOR
+ */
+void AppendStr_write_ch(AppendStr* as, char ch);
 
 void AppendStr_del(AppendStr* as);
 

@@ -33,6 +33,7 @@ target_include_directories(SmeltShared
 # Add test executables to build
 add_executable(SmeltTests
     tests/test_main.c
+    tests/test_append_str.c
 )
 
 target_include_directories(SmeltTests
