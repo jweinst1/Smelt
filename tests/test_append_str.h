@@ -6,4 +6,6 @@
 
 void test_append_str_new(void);
 
+void test_append_str_write(void);
+
 #endif

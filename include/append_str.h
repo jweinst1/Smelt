@@ -20,6 +20,8 @@
 #define APPEND_STR_SPACE(as) (as->cap - as->len)
 #define APPEND_STR_IS_FULL(as) (as->cap == as->len)
 #define APPEND_STR_END(as) (as->string + as->len)
+// Resets string to zero, allowing existing memory to be reused
+#define APPEND_STR_RESET(as) (as->len = 0)
 
 typedef struct
 {
@@ -37,8 +39,15 @@ void AppendStr_reserve(AppendStr* as, size_t n);
 
 /* Main character writing function
  * If full, expands by APPEND_STR_FACTOR
+ * exits if realloc returns NULL
  */
 void AppendStr_write_ch(AppendStr* as, char ch);
+
+static inline void 
+AppendStr_write_str(AppendStr* as, const char* string)
+{
+	while(*string) AppendStr_write_ch(as, *string++);
+}
 
 void AppendStr_del(AppendStr* as);
 
