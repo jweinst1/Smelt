@@ -36,6 +36,10 @@ AppendStr* AppendStr_new(void);
 AppendStr* AppendStr_new_sz(size_t start_size);
 // Reserves additional capacity of some amount n
 void AppendStr_reserve(AppendStr* as, size_t n);
+// Prints all the characters in string to stdout.
+void AppendStr_print(AppendStr* as);
+// writes whole string to file, assumes fp mode
+void AppendStr_to_file(AppendStr* as, FILE* fp);
 
 /* Main character writing function
  * If full, expands by APPEND_STR_FACTOR

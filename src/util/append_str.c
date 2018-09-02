@@ -42,6 +42,16 @@ void AppendStr_reserve(AppendStr* as, size_t n)
 	APPEND_STR_REALLOC(as);
 }
 
+void AppendStr_print(AppendStr* as)
+{
+	for(int i = 0; i < as->len ; i++) putchar(as->string[i]);
+}
+
+void AppendStr_to_file(AppendStr* as, FILE* fp)
+{
+	fwrite(as->string, sizeof(char), as->len, fp);
+}
+
 void AppendStr_write_ch(AppendStr* as, char ch)
 {
 	if(APPEND_STR_IS_FULL(as))
