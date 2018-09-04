@@ -1,5 +1,5 @@
 # smelt
 
-*A CSV engine*
+*A single header CSV library in C*
 
 

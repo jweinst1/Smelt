@@ -1,13 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "test_append_str.h"
-
-
+/*
+* Main testing file for Smelt
+*/
 
 int main(int argc, char const *argv[])
 {
-    test_append_str_new();
-    test_append_str_write();
+	puts("Hello")
 	return 0;
 }
