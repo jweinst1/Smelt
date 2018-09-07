@@ -15,23 +15,33 @@ add_library(SmeltShared SHARED
 
 ###################################
 
-target_include_directories(SmeltStatic
+target_include_directories(SmeltShared
     PUBLIC 
         ${PROJECT_SOURCE_DIR}/include
 )
 
-# Add test executables to build
-add_executable(SmeltTests
-    tests/test_main.c
+# Tests for header file executable #
+add_executable(SmeltHeaderTests
+    tests/test_header_file.c
 )
 
-target_include_directories(SmeltTests
+# Tests for shared lib executable #
+add_executable(SmeltLibTests
+    tests/test_shared_lib.c
+)
+
+target_include_directories(SmeltLibTests
+    PUBLIC 
+        ${PROJECT_SOURCE_DIR}/include
+)
+
+target_include_directories(SmeltHeaderTests
     PUBLIC 
         ${PROJECT_SOURCE_DIR}/include
 )
 
 # links library to test executable
-target_link_libraries( SmeltTests
+target_link_libraries( SmeltLibTests
     PRIVATE 
         SmeltShared
 )
