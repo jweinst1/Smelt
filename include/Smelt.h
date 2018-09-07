@@ -80,6 +80,12 @@ _smelt_item_new_clean(size_t size)
 	item->data = _new_char_array(size);
 	return item;
 }
+// Private fast function to print item data to stdout, stderr, or file
+static inline void
+_smelt_item_fprint(smelt_item_t* item, FILE* fp)
+{
+	fprintf(fp, "%s", item->data);
+}
 
 // Destructor function for items.
 void _smelt_item_del(smelt_item_t* item)
@@ -132,6 +138,14 @@ static inline void
 _smelt_row_trim(smelt_row_t* row, size_t amount)
 {
 	while(row->len && amount--) free(row->items[row->len--]);
+}
+
+// Get Item method for rows.
+// Returns NULL if index is out of range.
+static inline smelt_item_t*
+_smelt_row_get(smelt_row_t* row, size_t index)
+{
+	 return (index < row->len) ? row->items[index] : NULL;
 }
 
 // Reads an entire file into memory of a c-string

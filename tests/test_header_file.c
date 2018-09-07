@@ -15,12 +15,22 @@ void test_smelt_parse_next_item(void)
 	const char** doc = &tester;
 	int r = 0;
 	smelt_item_t* parse = Smelt_parse_next_item(doc, &r);
-	puts(parse->data);
+	printf("Got item in test:%s\n", parse->data);
 	TEST_IS_EQ("test_smelt_parse_next_item", r, 1);
+}
+
+void test_smelt_parse_next_row(void)
+{
+	const char* tester = "ralph,frank\ntom,scott\ncharles,tod";
+	const char** doc = &tester;
+	int r = 0;
+	smelt_row_t* first_row = Smelt_parse_next_row(doc, &r);
+	TEST_IS_EQ("test_smelt_parse_next_row", r, 2);
 }
 
 int main(int argc, char const *argv[])
 {
 	test_smelt_parse_next_item();
+	test_smelt_parse_next_row();
 	return 0;
 }
