@@ -5,6 +5,28 @@ Main Smelt single header for CSV parsing and writing.
 ------------------------------
 Wrriten by Joshua Weinstein
 Email: jweinst1@berkeley.edu
+
+MIT License
+
+Copyright (c) 2018 Josh Weinstein
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #include <stdio.h>
@@ -14,6 +36,9 @@ Email: jweinst1@berkeley.edu
 // Macro that represents the default capacity of row structure
 #define SMELT_ROW_DEF_CAP 15
 #define SMELT_ROW_EXP_FACTOR 2
+
+#define SMELT_TABLE_DEF_CAP 15
+#define SMELT_TABLE_EXP_FACTOR 2
 
 // Macro that writes string to smelt_item_t only up to the item's size.
 #define _SMELT_ITEM_WRITE(item, string) strncpy(item->data, string, item->size)
@@ -45,8 +70,9 @@ typedef struct
 */
 typedef struct
 {
-	size_t size;
-	smelt_row_t* rows;
+	size_t cap;
+	size_t len;
+	smelt_row_t** rows;
 } smelt_table_t;
 
 /*Note: Functions with _ are intended to be private functions*/
@@ -94,7 +120,7 @@ void _smelt_item_del(smelt_item_t* item)
 	free(item);
 }
 
-// Row new, expand, delete functions //
+// Row new, expand, delete... functions //
 
 static smelt_row_t*
 _smelt_row_new(size_t size)
@@ -148,6 +174,66 @@ _smelt_row_get(smelt_row_t* row, size_t index)
 	 return (index < row->len) ? row->items[index] : NULL;
 }
 
+// Prints a row to some file stream with exact csv format.
+static void
+_smelt_row_fprint(smelt_row_t* row, FILE* fp)
+{
+	size_t ind = 0;
+	while(ind < row->len - 1)
+	{
+		_smelt_item_fprint(row->items[ind++], fp);
+		putc(',', fp);
+	}
+	// Last item ended with newline
+	_smelt_item_fprint(row->items[ind], fp);
+	putc('\n', fp);
+}
+
+// Table new function
+static smelt_table_t*
+_smelt_table_new(size_t size)
+{
+	smelt_table_t* table = malloc(sizeof(smelt_table_t));
+	table->cap = size;
+	table->len = 0;
+	table->rows = malloc(sizeof(smelt_row_t*) * size);
+	return table;
+}
+
+/* Expansion function for table
+ * Works similarly to the row expansion function.
+ * Only expands when full.
+ */
+static inline void
+_smelt_table_check_space(smelt_table_t* table)
+{
+	if(table->len == table->cap)
+	{
+		table->cap *= SMELT_TABLE_EXP_FACTOR;
+		table->rows = realloc(table->rows, table->cap * sizeof(smelt_row_t*));
+	}
+}
+
+static inline void
+_smelt_table_append(smelt_table_t* table, smelt_row_t* row)
+{
+	_smelt_table_check_space(table);
+	table->rows[table->len++] = row;
+}
+
+static inline void
+_smelt_table_del(smelt_table_t* table)
+{
+	for(size_t i = 0; i < table->len; i++) _smelt_row_del(table->rows[i]);
+	free(table);
+}
+
+static inline void
+_smelt_table_fprint(smelt_table_t* table, FILE* fp)
+{
+	for(size_t i = 0; i < table->len ; i++) _smelt_row_fprint(table->rows[i], fp);
+}
+
 // Reads an entire file into memory of a c-string
 // If path cannot be reached or read from, returns NULL
 static const char*
@@ -199,12 +285,11 @@ _find_next_terminator(const char** document)
 
 // Public parsing function to get another csv item out of the document.
 smelt_item_t*
-Smelt_parse_next_item(const char** document, int* result)
+_smelt_parse_next_item(const char** document, int* result)
 {
+	if(!(**document)) return NULL;
 	const char* start_parse = *document;
 	*result = _find_next_terminator(document);
-	// End of document reached
-	if(*result == 0) return NULL;
 	smelt_item_t* parsed_item = _smelt_item_new_clean(*document - start_parse);
 	*document += 1; // advances past found terminator
 	_SMELT_ITEM_WRITE(parsed_item, start_parse);
@@ -213,27 +298,52 @@ Smelt_parse_next_item(const char** document, int* result)
 
 // Public parsing function to get the next row out of the document.
 smelt_row_t*
-Smelt_parse_next_row(const char** document, int* result)
+_smelt_parse_next_row(const char** document, int* result)
 {
 	if(!(**document)) return NULL; // End of document reached
 	smelt_row_t* row = _smelt_row_new(SMELT_ROW_DEF_CAP);
-	smelt_item_t* current = Smelt_parse_next_item(document, result);
+	smelt_item_t* current = NULL;
 	while(*result)
 	{
+		current = _smelt_parse_next_item(document, result);
 		if(*result == 1)
 		{
 			_smelt_row_append(row, current);
 		}
-		else if(*result == 2)
+		else if(*result == 2 || !(*result))
 		{
 			// End of row reached, newline sym found.
+			// or, null found
 			_smelt_row_append(row, current);
 			return row;
 		}
-
-		smelt_item_t* current = Smelt_parse_next_item(document, result);
 	}
 	return row;
+}
+
+smelt_table_t*
+_smelt_parse_table(const char** document, int* result)
+{
+	if(!(**document)) return NULL;
+	smelt_table_t* table = _smelt_table_new(SMELT_TABLE_DEF_CAP);
+	smelt_row_t* current = NULL;
+	while(*result)
+	{
+		current = _smelt_parse_next_row(document, result);
+		if(current == NULL) return table; // empty row at end of doc
+		// Rows must always end with newline.
+		if(*result == 2)
+		{
+			_smelt_table_append(table, current);
+		}
+		else if (!(*result))
+		{
+			// Final row reached.
+			_smelt_table_append(table, current);
+			return table;
+		}
+	}
+	return table;
 }
 
 #endif // SMELT_H
