@@ -202,6 +202,18 @@ _smelt_row_fprint(smelt_row_t* row, FILE* fp)
 	putc('\n', fp);
 }
 
+// Sets the value of some item at an index in a row.
+// Some value must already be present at the row in that index
+static void
+_smelt_row_set(smelt_row_t* row, size_t index, smelt_item_t* item)
+{
+	if(index < row->len)
+	{
+		_smelt_item_del(row->items[index]);
+		row->items[index] = item;
+	}
+}
+
 // Table new function
 static smelt_table_t*
 _smelt_table_new(size_t size)
@@ -245,6 +257,12 @@ static inline void
 _smelt_table_fprint(smelt_table_t* table, FILE* fp)
 {
 	for(size_t i = 0; i < table->len ; i++) _smelt_row_fprint(table->rows[i], fp);
+}
+
+static inline smelt_row_t*
+_smelt_table_get(smelt_table_t* table, size_t index)
+{
+	return (index < table->len) ? table->rows[index] : NULL;
 }
 
 // Reads an entire file into memory of a c-string
