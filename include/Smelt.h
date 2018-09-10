@@ -113,6 +113,19 @@ _smelt_item_fprint(smelt_item_t* item, FILE* fp)
 	fprintf(fp, "%s", item->data);
 }
 
+// Copies data in the item to a C-String
+static inline void
+_smelt_item_sprint(smelt_item_t* item, char* string, size_t n)
+{
+	strncpy(string, item->data, n);
+}
+// Fast item comparison
+static inline int
+_smelt_item_eq(smelt_item_t* item1, smelt_item_t* item2)
+{
+	return strcmp(item1->data, item2->data) == 0;
+}
+
 // Destructor function for items.
 void _smelt_item_del(smelt_item_t* item)
 {
