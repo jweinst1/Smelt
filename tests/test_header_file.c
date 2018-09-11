@@ -64,11 +64,28 @@ void test_smelt_table_fprint(void)
 	remove("test_smelt.txt");
 }
 
+/* Test for how big the row can grow when more and more items are 
+*  append to it. Also tests for freeing large amount of items.
+*/
+void test_smelt_row_grow(void)
+{
+	smelt_row_t* row = _smelt_row_new(10);
+	smelt_item_t* retrieve;
+	for(int i = 0; i < 500; i++)
+	{
+		 retrieve = _smelt_item_new_clean(30);
+		_smelt_row_append(row, retrieve);
+	}
+	TEST_IS_EQ("test_smelt_row_grow", row->len, 500);
+	_smelt_row_del(row);
+}
+
 int main(int argc, char const *argv[])
 {
 	test_smelt_parse_next_item();
 	test_smelt_parse_next_row();
 	test_smelt_parse_table();
 	test_smelt_table_fprint();
+	test_smelt_row_grow();
 	return 0;
 }

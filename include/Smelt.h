@@ -163,6 +163,7 @@ static inline void
 _smelt_row_del(smelt_row_t* row)
 {
 	for(size_t i = 0; i < row->len ; i++) _smelt_item_del(row->items[i]);
+	free(row->items);
 	free(row);
 }
 // Appends new item to the end of the row
@@ -250,6 +251,7 @@ static inline void
 _smelt_table_del(smelt_table_t* table)
 {
 	for(size_t i = 0; i < table->len; i++) _smelt_row_del(table->rows[i]);
+	free(table->rows);
 	free(table);
 }
 
