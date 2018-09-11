@@ -80,6 +80,14 @@ void test_smelt_row_grow(void)
 	_smelt_row_del(row);
 }
 
+void test_smelt_item_new_int(void)
+{
+	smelt_item_t* num = _smelt_item_new_int(10);
+	int result = num->data[0] == '1' && num->data[1] == '0';
+	TEST_IS_TRUE("test_smelt_item_new_int", result);
+	_smelt_item_del(num);
+}
+
 int main(int argc, char const *argv[])
 {
 	test_smelt_parse_next_item();
@@ -87,5 +95,6 @@ int main(int argc, char const *argv[])
 	test_smelt_parse_table();
 	test_smelt_table_fprint();
 	test_smelt_row_grow();
+	test_smelt_item_new_int();
 	return 0;
 }

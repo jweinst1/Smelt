@@ -40,6 +40,8 @@ SOFTWARE.
 #define SMELT_TABLE_DEF_CAP 15
 #define SMELT_TABLE_EXP_FACTOR 2
 
+#define SMELT_MAX_32_BIT_DIGITS 11
+
 // Macro that writes string to smelt_item_t only up to the item's size.
 #define _SMELT_ITEM_WRITE(item, string) strncpy(item->data, string, item->size)
 
@@ -106,6 +108,25 @@ _smelt_item_new_clean(size_t size)
 	item->data = _new_char_array(size);
 	return item;
 }
+
+// Constructs item from existing C string of n length
+static inline smelt_item_t*
+_smelt_item_new_str(const char* string, size_t n)
+{
+	smelt_item_t* item = _smelt_item_new_clean(n);
+	strncpy(item->data, string, n);
+	return item;
+}
+
+// Constructs item from int, resulting in string value of int.
+static inline smelt_item_t*
+_smelt_item_new_int(int value)
+{
+	smelt_item_t* item = _smelt_item_new_clean(SMELT_MAX_32_BIT_DIGITS);
+	sprintf(item->data, "%d", value);
+	return item;	
+}
+
 // Private fast function to print item data to stdout, stderr, or file
 static inline void
 _smelt_item_fprint(smelt_item_t* item, FILE* fp)
