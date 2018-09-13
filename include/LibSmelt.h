@@ -30,6 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/*Data Structures for CSV Data*/
+
 /*Encapsulates a single member of a CSV row.
 * Holds data as characters
 */
@@ -40,12 +42,14 @@ typedef struct
 } smelt_item_t;
 
 /* Holds an entire row of items.
-  Supports rows that are of different sizes.
+  * Supports rows that are of different sizes.
+  * Also functions as expandable container
   */
 typedef struct
 {
-	size_t size;
-	smelt_item_t* items;
+	size_t cap;
+	size_t len;
+	smelt_item_t** items;
 } smelt_row_t;
 
 /*Encapsulates data for entire CSV table document.
@@ -53,9 +57,18 @@ typedef struct
 */
 typedef struct
 {
-	size_t size;
-	smelt_row_t* rows;
+	size_t cap;
+	size_t len;
+	smelt_row_t** rows;
 } smelt_table_t;
+
+smelt_table_t*
+Smelt_parse_string(const char* csv);
+
+smelt_table_t*
+Smelt_parse_file(const char* path);
+
+void Smelt_delete_table(smelt_table_t* table);
 
 
 #endif

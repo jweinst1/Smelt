@@ -90,11 +90,13 @@ void test_smelt_item_new_int(void)
 
 int main(int argc, char const *argv[])
 {
+	puts("~~~~~~Smelt Header Tests~~~~~~~~~~~");
 	test_smelt_parse_next_item();
 	test_smelt_parse_next_row();
 	test_smelt_parse_table();
 	test_smelt_table_fprint();
 	test_smelt_row_grow();
 	test_smelt_item_new_int();
+	puts("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 	return 0;
 }

@@ -27,7 +27,16 @@
 
 #define TEST_NOT_NULL(name, result) puts(TEST_BAR_SEP); printf("not_null test for: %s\n", name); \
                                            if(result != NULL) printf("test PASSED\n"); \
-                                           else printf("test FAILED\n") 
+                                           else printf("test FAILED\n")
+
+// Convenience macro to write string to file for testing purposes
+#define TEST_WRITE_STRING_TO_FILE(path, string) do { \
+       FILE* fp; \
+       fp = fopen(path, "w+"); \
+       if(fp == NULL) {fprintf(stderr, "Cannot write to file at path: %s, exiting.\n", path); exit(1);} \
+       fprintf(fp, "%s", string); \
+       fclose(fp); \
+} while(0)
 
 
 

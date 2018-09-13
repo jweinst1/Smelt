@@ -338,7 +338,7 @@ _find_next_terminator(const char** document)
 }
 
 // Public parsing function to get another csv item out of the document.
-smelt_item_t*
+static smelt_item_t*
 _smelt_parse_next_item(const char** document, int* result)
 {
 	if(!(**document)) return NULL;
@@ -351,7 +351,7 @@ _smelt_parse_next_item(const char** document, int* result)
 }
 
 // Public parsing function to get the next row out of the document.
-smelt_row_t*
+static smelt_row_t*
 _smelt_parse_next_row(const char** document, int* result)
 {
 	if(!(**document)) return NULL; // End of document reached
@@ -375,7 +375,7 @@ _smelt_parse_next_row(const char** document, int* result)
 	return row;
 }
 
-smelt_table_t*
+static smelt_table_t*
 _smelt_parse_table(const char** document, int* result)
 {
 	if(!(**document)) return NULL;
@@ -398,6 +398,35 @@ _smelt_parse_table(const char** document, int* result)
 		}
 	}
 	return table;
+}
+
+/*PUBLIC API*/
+
+smelt_table_t*
+Smelt_parse_string(const char* csv)
+{
+	const char* text = csv;
+	const char** doc = &text;
+	int state = 0xFF;
+	return _smelt_parse_table(doc, &state);
+}
+
+smelt_table_t*
+Smelt_parse_file(const char* path)
+{
+	const char* csv_string = _read_file_into_c_string(path);
+	if(csv_string == NULL) return NULL; // Cannot access path.
+	const char* text = csv_string;
+	const char** doc = &text;
+	int state = 0xFF;
+	smelt_table_t* table = _smelt_parse_table(doc, &state);
+	free((void*)csv_string);
+	return table;
+}
+
+void Smelt_delete_table(smelt_table_t* table)
+{
+	_smelt_table_del(table);
 }
 
 #endif // SMELT_H

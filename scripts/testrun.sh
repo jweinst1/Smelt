@@ -1,4 +1,5 @@
 # For running tests in one command
+echo "-Running Smelt Tests and Building-"
 mkdir -p build
 cd build
 cmake ..
