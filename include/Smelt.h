@@ -120,7 +120,7 @@ _smelt_item_new_str(const char* string, size_t n)
 
 // Constructs item from int, resulting in string value of int.
 static inline smelt_item_t*
-_smelt_item_new_int(int value)
+_smelt_item_new_int(const int value)
 {
 	smelt_item_t* item = _smelt_item_new_clean(SMELT_MAX_32_BIT_DIGITS);
 	sprintf(item->data, "%d", value);
@@ -402,6 +402,7 @@ _smelt_parse_table(const char** document, int* result)
 
 /*PUBLIC API*/
 
+// Parses csv from null-terminated C-string
 smelt_table_t*
 Smelt_parse_string(const char* csv)
 {
@@ -411,6 +412,8 @@ Smelt_parse_string(const char* csv)
 	return _smelt_parse_table(doc, &state);
 }
 
+// Reads all characters from file and parses CSV from 
+// resulting string.
 smelt_table_t*
 Smelt_parse_file(const char* path)
 {
@@ -424,9 +427,106 @@ Smelt_parse_file(const char* path)
 	return table;
 }
 
+// Access function for rows
+// If index is out of range, returns NULL
+smelt_row_t*
+Smelt_get_row(smelt_table_t* table, size_t index)
+{
+	return _smelt_table_get(table, index);
+}
+
+// Access function for item in some row and column slot.
+// if either index is out of range, returns NULL
+smelt_item_t*
+Smelt_get_item(smelt_table_t* table, size_t row, size_t col)
+{
+	smelt_row_t* got_row = _smelt_table_get(table, row);
+	if(got_row == NULL) return NULL; 
+	return _smelt_row_get(got_row, col);
+}
+
+/* Set function for smelt tables
+* Returns 0 if indexes are out of range.
+* Returns 1 upon successful set of item in table.
+*/
+int
+Smelt_set_item_str(smelt_table_t* table, 
+	               size_t x, 
+	               size_t y, 
+	               const char* value,
+	               size_t slice)
+{
+	smelt_row_t* got_row = _smelt_table_get(table, x);
+	if(got_row == NULL) return 0;
+	smelt_item_t* got_item = _smelt_row_get(got_row, y);
+	if(got_item == NULL) return 0;
+	_smelt_item_del(got_item);
+	got_row->items[y] = _smelt_item_new_str(value, slice);
+	return 1;
+}
+
+// Works the same as Smelt_set_item_str
+// Sets value to string representation of int instead.
+int
+Smelt_set_item_int(smelt_table_t* table, 
+	               size_t x, 
+	               size_t y, 
+	               const int value)
+{
+	smelt_row_t* got_row = _smelt_table_get(table, x);
+	if(got_row == NULL) return 0;
+	smelt_item_t* got_item = _smelt_row_get(got_row, y);
+	if(got_item == NULL) return 0;
+	_smelt_item_del(got_item);
+	got_row->items[y] = _smelt_item_new_int(value);
+	return 1;
+}
+
+/* File writing function
+ * Writes a smelt table to a file at destination path.
+ * Accepts file mode relevant to C IO.
+ * Should only be "w" or "a"
+ * Returns 1 upon successful write, 0 otherwise.
+*/
+int
+Smelt_to_file(smelt_table_t* table, const char* path, const char* mode)
+{
+	FILE* fp;
+	fp = fopen(path, mode);
+	if(fp == NULL) return 0;
+	_smelt_table_fprint(table, fp);
+	fclose(fp);
+	return 1;
+}
+
+/*Printing Functions
+ * Prints item, row, or table respectively to stdout.
+*/
+
+void
+Smelt_print_item(smelt_item_t* item)
+{
+	_smelt_item_fprint(item, stdout);
+}
+
+void
+Smelt_print_row(smelt_row_t* row)
+{
+	_smelt_row_fprint(row, stdout);
+}
+
+void
+Smelt_print_table(smelt_table_t* table)
+{
+	_smelt_table_fprint(table, stdout);
+}
+
+// Deletes table and frees all memory owned by it.
 void Smelt_delete_table(smelt_table_t* table)
 {
 	_smelt_table_del(table);
 }
+
+
 
 #endif // SMELT_H

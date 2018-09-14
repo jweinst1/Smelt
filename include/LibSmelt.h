@@ -70,5 +70,38 @@ Smelt_parse_file(const char* path);
 
 void Smelt_delete_table(smelt_table_t* table);
 
+smelt_row_t*
+Smelt_get_row(smelt_table_t* table, size_t index);
+
+smelt_item_t*
+Smelt_get_item(smelt_table_t* table, size_t row, size_t col);
+
+int
+Smelt_set_item_str(smelt_table_t* table, 
+	               size_t x, 
+	               size_t y, 
+	               const char* value,
+	               size_t slice);
+
+int
+Smelt_set_item_int(smelt_table_t* table, 
+	               size_t x, 
+	               size_t y, 
+	               const int value);
+
+int
+Smelt_to_file(smelt_table_t* table, const char* path, const char* mode);
+
+void
+Smelt_print_item(smelt_item_t* item);
+
+void
+Smelt_print_row(smelt_row_t* row);
+
+void
+Smelt_print_table(smelt_table_t* table);
+
+
+
 
 #endif
